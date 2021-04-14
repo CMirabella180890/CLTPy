@@ -1,2 +1,3 @@
-# CLTPy
-An analysis tool for laminate of composite materials based on Classical Laminate Theory.
+# CLTPy - An analysis tool based on Classical Lamination Theory
+## Introduction
+It is often quite handy to have a fast-to-launch tool to make some preliminary calculation in many field of science and engineering. The purpose of this Python piece of code is to build such a tool concerning the design of a composite laminate, starting with composite ply material's data. The code is still far from being applicable in a straightforward manner to the preliminary design of composite material laminates, although it is able to perform all the basic calculations required. The use of an external .json file to store materials' properties provide a means to add new materials.
