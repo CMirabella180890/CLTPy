@@ -16,5 +16,7 @@ At the moment, the program is too "heavy" and quite hard to read. Any possible i
 5.  **improve the readability of the code**, exploiting comments and **building proper documentation**.
 ## Long-term objectives 
 The author of the code wants to build a free-of-charge tool to help preliminary design of composite laminates. Any help from other Python-enthusiast-engineers like the author will be greatly appreciated. Please, contact me at: 
+
 > **claudio.mirabella90@gmail.com**
+
 I will answer to you in few days.
