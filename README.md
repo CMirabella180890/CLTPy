@@ -9,9 +9,12 @@ The current version of the program is capable to
 * **Classical Lamination Theory** is then applied to obtain stresses and strains inside every single-ply of the lamination sequence, evaluating also the **Margin of Safety** (not available at the moment but it will be very soon!).
 ## Criticism about current implementation 
 At the moment, the program is too "heavy" and quite hard to read. Any possible improvements are related to
-1. increase the modularity level and decompose the main program into several smaller parts;
-2.  increase the modularity level and decompose the main program into several smaller parts;
-3.  building a package, possibly following a high modularity logic; 
-4.  avoid misusing dictionary variables and correctly store all the materials' data; 
-5.  improve the usability with a better INPUT/OUTPUT or, even better, building a GUI; 
-6.  improve the readability of the code, exploiting comments and building proper documentation.
+1. **increase the modularity level** and decompose the main program into several smaller parts;
+2.  **building a package**, possibly following a high modularity logic; 
+3.  **avoid misusing dictionary variables** and **correctly store all the materials' data**; 
+4.  **improve the usability** with a better INPUT/OUTPUT or, even better, **building a GUI**; 
+5.  **improve the readability of the code**, exploiting comments and **building proper documentation**.
+## Long-term objectives 
+The author of the code wants to build a free-of-charge tool to help preliminary design of composite laminates. Any help from other Python-enthusiast-engineers like the author will be greatly appreciated. Please, contact me at: 
+> **claudio.mirabella90@gmail.com**
+I will answer to you in few days.
