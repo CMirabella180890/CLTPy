@@ -44,6 +44,7 @@ def psi2pascal(x):
 import json 
 from types import SimpleNamespace
 import numpy as np
+from collections import defaultdict
 # =======================================
 JSONFileName = "composites_data.json"
 with open(JSONFileName, "r") as f:
@@ -705,9 +706,25 @@ class CLT(object):
         print(" eps   =\n", self.epsilon)
         print("\n CURVATURE VECTOR:\n", " --------------------------- ")
         print(" kappa =\n", self.kappa)
+        self.eps_i = [0]*len(self.Qlam)
+        for i in range(len(self.eps_i)):
+            self.eps_i[i] = self.epsilon + self.kappa*(self.z[i]+self.z[i+1])
+            print(" **** LOCAL STRAIN PLY ", i, " **** ")
+            print(" eps_i = \n", self.eps_i[i])
+            print(" ********************************** ")
         # =========================================================================
-        self.sigma_laminate = self.stress_laminate(self.Qlam, t_ply, self.epsilon, lam_seq)
-        self.sigma_lamina   = self.stress_lamina(self.Tsig, self.sigma_laminate, lam_seq)
+        self.sigma_laminate = self.stress_laminate(self.Qlam, t_ply,\
+                                                   self.epsilon, lam_seq)
+        self.sigma_lamina   = self.stress_lamina(self.Tsig,\
+                                                 self.sigma_laminate, lam_seq)
+        self.strain_lamina  = self.strain_lamina(self.Teps, self.epsilon,\
+                                                 lam_seq)
+        self.Margin_of_Safety_Max_Stress = self.max_stress_crit(self.mat,\
+                                                     self.sigma_lamina, lam_seq)
+        self.Margin_of_Safety_Max_Strain = self.max_strain_crit(self.mat,\
+                                                     self.strain_lamina, lam_seq)
+        self.Margin_of_Safety_Tsai_Hill  = self.tsai_hill(self.mat,\
+                                                     self.sigma_lamina, lam_seq)    
 # ============================================================================        
     def mat_choose(self, s, code, si_mat, eng_mat, name):
         """
@@ -966,8 +983,7 @@ class CLT(object):
         for i in range(len(Qlam)):
             theta        = lam_seq[i]
             sigma_lam[i] = Qlam[i]["Value"] @ epsilon
-            sigma_dict   = {"Value":sigma_lam[i], "Unit":Qlam[0]["Unit"]+"/"+\
-                            t_ply["Unit"]+"^2"}
+            sigma_dict   = {"Value":sigma_lam[i], "Unit":Qlam[0]["Unit"]}
             print("\n ----- LAMINATE STRESS ----- ")
             print(" PLY NUMBER: ", i)
             print(" --------------------- ")
@@ -995,4 +1011,372 @@ class CLT(object):
             stress_lam[i] = stress_dict
             
         return stress_lam
+# =========================================================================
+    def strain_lamina(self, Teps, epsilon, lam_seq):
+        strain_lam  = [0]*len(lam_seq)
+        strain_dict = {}
+        for i in range(len(lam_seq)):
+            theta        = lam_seq[i]
+            Teps_inv     = np.linalg.inv(Teps[i])
+            strain_lam[i] = Teps_inv @ epsilon
+            strain_dict   = {"Value":strain_lam[i], "Unit":"Non-dim."}
+            print("\n ----- LAMINA STRAIN ----- ")
+            print(" PLY NUMBER: ", i)
+            print(" --------------------- ")
+            print(" THETA = ", theta)
+            print(" --------------------- ")
+            print(" EPSILON LAMINA = \n", strain_dict["Value"], strain_dict["Unit"])
+            strain_lam[i] = strain_dict
             
+        return strain_lam   
+# =========================================================================
+    def max_stress_crit(self, mat, tension_lamina, lam_seq):
+        print("\n *** PROPERTIES *** ")
+        print(" ****************** ")
+        for key in mat.items():
+            print(" Selected material: ", key[0])
+            print(" ****************** ")
+            for prop, value in key[1].items():
+                if (prop == "TensileStrengthXt"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_xUT = value["Value"]
+                if (prop == "CompressiveStrengthXc"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_xUC = value["Value"]
+                if (prop == "TensileStrengthYt"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_yUT = value["Value"]
+                if (prop == "CompressiveStrengthYc"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_yUC = value["Value"]
+                if (prop == "ShearStrengthS"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    tau_U = value["Value"]
+                    
+        theta  = 0 
+        stress = 0
+        mos    = np.array([0.0, 0.0, 0.0])
+        MS     = [0]*len(lam_seq)
+        for i in range(len(lam_seq)):
+            theta = lam_seq[i]
+            print("\n --------------------- ")
+            print(" PLY NUMBER: ", i)
+            print(" --------------------- ")
+            print(" THETA = ", theta)
+            stress = tension_lamina[i].values()
+            stress = list(stress)
+            stress = stress[0]
+            for j in range(len(stress)):  
+                # X DIRECTION
+                if (stress[j]>=0 and j == 0):
+                    print("\n **** TENSILE STRESS 1 **** ")
+                    if (stress[j]>=sigma_xUT):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", stress[j], " > ", sigma_xUT)
+                        print(" TENSILE STRESS IS GREATER THAN ALLOWABLE ")
+                    elif (stress[j]<sigma_xUT):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ TENSILE RESIDUAL STRENGTH ++++ ")
+                        ms1 = ((sigma_xUT)/(stress[j])) - 1
+                        print(" M. S. = ", ms1)
+                        mos[j] = ms1
+                elif (stress[j]<0 and j == 0):
+                    print("\n **** COMPRESSIVE STRESS 1 **** ")
+                    if (abs(stress[j])>=abs(sigma_xUC)):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", abs(stress[j]), " > ",\
+                              abs(sigma_xUC))
+                        print(" COMPRESSIVE STRESS IS GREATER THAN ALLOWABLE ")
+                    elif (abs(stress[j])<abs(sigma_xUC)):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ COMPRESSIVE RESIDUAL STRENGTH ++++ ")
+                        ms1 = (abs(sigma_xUC)/abs(stress[j])) - 1
+                        print(" M. S. = ", ms1)
+                        mos[j] = ms1
+                elif (stress[j] == 0 and j == 0):
+                    print("\n ++++ NO STRESS ALONG 1 ++++")
+                # Y DIRECTION          
+                if (stress[j]>=0 and j == 1):
+                    print("\n **** TENSILE STRESS 2 **** ")
+                    if (stress[j]>=sigma_yUT):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", stress[j], " > ", sigma_yUT)
+                        print(" TENSILE STRESS IS GREATER THAN ALLOWABLE ")
+                    elif (stress[j]<sigma_yUT):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ TENSILE RESIDUAL STRENGTH ++++ ")
+                        ms2 = (sigma_yUT/stress[j]) - 1
+                        print(" M. S. = ", ms2)
+                        mos[j] = ms2
+                elif (stress[j]<0 and j == 1):
+                    print("\n **** COMPRESSIVE STRESS 2 **** ")
+                    if (abs(stress[j])>=abs(sigma_yUC)):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", abs(stress[j]), " > ",\
+                              abs(sigma_yUT))
+                        print(" COMPRESSIVE STRESS IS GREATER THAN ALLOWABLE ")
+                    elif (abs(stress[j])<abs(sigma_yUC)):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ COMPRESSIVE RESIDUAL STRENGTH ++++ ")
+                        ms2 = (abs(sigma_yUC)/abs(stress[j])) - 1
+                        print(" M. S. = ", ms2)
+                        mos[j] = ms2
+                elif (stress[j] == 0 and j == 1):
+                    print("\n ++++ NO STRESS ALONG 2 ++++")                        
+                # SHEAR   
+                if (stress[j] == 0 and j == 2):
+                    print("\n ++++ NO STRESS IN SHEAR ++++")        
+                elif (stress[j] != 0 and j == 2):
+                    print("\n **** SHEAR STRESS **** ")
+                    if (abs(stress[j])>=abs(tau_U)):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", stress[j], " > ", tau_U)
+                        print(" SHEAR STRESS IS GREATER THAN ALLOWABLE ")
+                    elif (stress[j]<tau_U):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ SHEAR RESIDUAL STRENGTH ++++ ")
+                        mss = (abs(tau_U)/abs(stress[j])) - 1
+                        print(" M. S. = ", mss)
+                        mos[j] = mss                        
+            # FILLING A LIST WITH M. S. VECTORS
+            MS[i] = mos 
+            mos   = np.array([0.0, 0.0, 0.0])
+            ms1   = 0.0 
+            ms2   = 0.0 
+            mss   = 0.0
+            
+        return MS
+# =========================================================================
+    def max_strain_crit(self, mat, deformation_lamina, lam_seq):
+        print("\n *** PROPERTIES *** ")
+        print(" ****************** ")
+        for key in mat.items():
+            print(" Selected material: ", key[0])
+            print(" ****************** ")
+            for prop, value in key[1].items():
+                if (prop == "TensileModulusE1"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    E1 = value["Value"]
+                if (prop == "TensileModulusE2"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    E2 = value["Value"]
+                if (prop == "ShearModulusG12"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    G12 = value["Value"]
+                if (prop == "PoissonRatiov12"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    ni12 = value["Value"]
+                if (prop == "TensileStrengthXt"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_xUT = value["Value"]
+                if (prop == "CompressiveStrengthXc"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_xUC = value["Value"]
+                if (prop == "TensileStrengthYt"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_yUT = value["Value"]
+                if (prop == "CompressiveStrengthYc"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_yUC = value["Value"]
+                if (prop == "ShearStrengthS"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    tau_U = value["Value"]
+        # ALLOWABLES
+        eps1UT = sigma_xUT/E1
+        eps1UC = sigma_xUC/E1
+        eps2UT = sigma_yUT/E2
+        eps2UC = sigma_yUC/E2
+        gam_6  = tau_U/G12
+        # CALCULATIONS            
+        theta  = 0 
+        strain = 0
+        mos    = np.array([0.0, 0.0, 0.0])
+        MS     = [0]*len(lam_seq)
+        for i in range(len(lam_seq)):
+            theta = lam_seq[i]
+            print("\n --------------------- ")
+            print(" PLY NUMBER: ", i)
+            print(" --------------------- ")
+            print(" THETA = ", theta)
+            strain = deformation_lamina[i].values()
+            strain = list(strain)
+            strain = strain[0] 
+            for j in range(len(strain)):  
+                # X DIRECTION
+                if (strain[j]>=0 and j == 0):
+                    print("\n **** TENSILE STRAIN 1 **** ")
+                    if (strain[j]>=eps1UT):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", strain[j], " > ", eps1UT)
+                        print(" TENSILE STRAIN IS GREATER THAN ALLOWABLE ")
+                    elif (strain[j]<eps1UT):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ TENSILE RESIDUAL STRENGTH ++++ ")
+                        ms1 = (eps1UT/strain[j]) - 1
+                        print(" M. S. = ", ms1)
+                        mos[j] = ms1
+                elif (strain[j]<0 and j == 0):
+                    print("\n **** COMPRESSIVE STRAIN 1 **** ")
+                    if (abs(strain[j])>=abs(eps1UC)):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", abs(strain[j]), " > ",\
+                              abs(eps1UC))
+                        print(" COMPRESSIVE STRAIN IS GREATER THAN ALLOWABLE ")
+                    elif (abs(strain[j])<abs(eps1UC)):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ COMPRESSIVE RESIDUAL STRENGTH ++++ ")
+                        ms1 = (abs(eps1UC)/abs(strain[j])) - 1
+                        print(" M. S. = ", ms1)
+                        mos[j] = ms1
+                elif (strain[j] == 0 and j == 0):
+                    print("\n ++++ NO STRESS ALONG 1 ++++")
+                # Y DIRECTION          
+                if (strain[j]>=0 and j == 1):
+                    print("\n **** TENSILE STRAIN 2 **** ")
+                    if (strain[j]>=eps2UT):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", strain[j], " > ", eps2UT)
+                        print(" TENSILE STRAIN IS GREATER THAN ALLOWABLE ")
+                    elif (strain[j]<eps2UT):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ TENSILE RESIDUAL STRENGTH ++++ ")
+                        ms2 = (eps2UT/strain[j]) - 1
+                        print(" M. S. = ", ms2)
+                        mos[j] = ms2
+                elif (strain[j]<0 and j == 1):
+                    print("\n **** COMPRESSIVE STRAIN 2 **** ")
+                    if (abs(strain[j])>=abs(eps2UC)):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", abs(strain[j]), " > ",\
+                              abs(eps2UC))
+                        print(" COMPRESSIVE STRAIN IS GREATER THAN ALLOWABLE ")
+                    elif (abs(strain[j])<abs(eps2UC)):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ COMPRESSIVE RESIDUAL STRENGTH ++++ ")
+                        ms2 = (abs(eps2UC)/abs(strain[j])) - 1
+                        print(" M. S. = ", ms2)
+                        mos[j] = ms2
+                elif (strain[j] == 0 and j == 1):
+                    print("\n ++++ NO STRESS ALONG 2 ++++")                        
+                # SHEAR   
+                if (strain[j] == 0 and j == 2):
+                    print("\n ++++ NO STRESS IN SHEAR ++++")        
+                elif (strain[j] != 0 and j == 2):
+                    print("\n **** SHEAR STRESS **** ")
+                    if (abs(strain[j])>=abs(gam_6)):
+                        print(" ++++ FAILURE! ++++ ")
+                        print(" ", strain[j], " > ", gam_6)
+                        print(" SHEAR STRESS IS GREATER THAN ALLOWABLE ")
+                    elif (abs(strain[j])<abs(gam_6)):
+                        print(" ++++ MARGIN OF SAFETY ++++ ")
+                        print(" ++++ SHEAR RESIDUAL STRENGTH ++++ ")
+                        mss = (abs(gam_6)/abs(strain[j])) - 1
+                        print(" M. S. = ", mss)
+                        mos[j] = mss                        
+            # FILLING A LIST WITH M. S. VECTORS
+            MS[i] = mos 
+            mos   = np.array([0.0, 0.0, 0.0])
+            strain = 0
+            ms1   = 0.0 
+            ms2   = 0.0 
+            mss   = 0.0
+            
+        return MS    
+# =========================================================================
+    def tsai_hill(self, mat, tension_lamina, lam_seq):
+        print("\n *** PROPERTIES *** ")
+        print(" ****************** ")
+        for key in mat.items():
+            print(" Selected material: ", key[0])
+            print(" ****************** ")
+            for prop, value in key[1].items():
+                if (prop == "TensileStrengthXt"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_xUT = value["Value"]
+                if (prop == "CompressiveStrengthXc"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_xUC = value["Value"]
+                if (prop == "TensileStrengthYt"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_yUT = value["Value"]
+                if (prop == "CompressiveStrengthYc"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    sigma_yUC = value["Value"]
+                if (prop == "ShearStrengthS"):
+                    print(" ", prop, " = ", value["Value"], value["Unit"])
+                    tau_U = value["Value"]
+                    
+        # TENSILE COEFFICIENTS
+        AT = 1/(sigma_xUT**2)
+        BT = 1/(sigma_yUT**2)
+        D  = 1/(tau_U**2)
+        # TENSILE COEFFICIENTS
+        AC = 1/(sigma_xUC**2)
+        BC = 1/(sigma_yUC**2)
+        D  = 1/(tau_U**2)
+        stress = 0
+        mos    = 0.0
+        MS     = [0]*len(lam_seq)
+        for i in range(len(lam_seq)):
+            theta = lam_seq[i]
+            print("\n --------------------- ")
+            print(" PLY NUMBER: ", i)
+            print(" --------------------- ")
+            print(" THETA = ", theta)
+            stress = tension_lamina[i].values()
+            stress = list(stress)
+            stress = stress[0]            
+            for j in range(len(stress)):  
+                # C COEFFICIENT
+                if (j==0):
+                    if(stress[j]>=0):
+                        C  = 1/(sigma_xUT**2)
+                        xy = stress[j]*stress[j+1]
+                        c  = xy*C
+                    elif (stress[j]<0):
+                        C  = 1/(sigma_xUC**2)
+                        xy = stress[j]*stress[j+1]
+                        c  = xy*C
+                    elif (stress[j]==0):
+                        c  = 0
+                # X DIRECTION
+                if (stress[j]>=0 and j == 0):
+                    print("\n **** TENSILE STRESS 1 **** ")
+                    x = stress[j]**2
+                    a = x*AT
+                elif (stress[j]<0 and j == 0):
+                    print("\n **** COMPRESSIVE STRESS 1 **** ")
+                    x = stress[j]**2
+                    a = x*AC
+                elif (stress[j] == 0 and j == 0):
+                    print("\n ++++ NO STRESS ALONG 1 ++++")
+                    a = 0
+                # Y DIRECTION          
+                if (stress[j]>=0 and j == 1):
+                    print("\n **** TENSILE STRESS 2 **** ")
+                    y = stress[j]**2
+                    b = y*BT
+                elif (stress[j]<0 and j == 1):
+                    print("\n **** COMPRESSIVE STRESS 2 **** ")
+                    y = stress[j]**2
+                    b = y*BC
+                elif (stress[j] == 0 and j == 1):
+                    print("\n ++++ NO STRESS ALONG 2 ++++")  
+                    b = 0   
+                # SHEAR   
+                if (stress[j] == 0 and j == 2):
+                    print("\n ++++ NO STRESS IN SHEAR ++++") 
+                    d = 0
+                elif (stress[j] != 0 and j == 2):
+                    print("\n **** SHEAR STRESS **** ")
+                    z = stress[j]**2
+                    d = z*D  
+            # FILLING A LIST WITH M. S. VECTORS
+            mos   = a + b - c + d - 1
+            print(" ++++ MARGIN OF SAFETY ++++ ")
+            print(" M. S. = ", mos)
+            MS[i] = mos 
+            mos   = 0.0
+            a, b, c, d = 0.0, 0.0, 0.0, 0.0
+            
+        return MS
