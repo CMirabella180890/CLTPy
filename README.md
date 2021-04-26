@@ -6,7 +6,7 @@ The current version of the program is capable to
 * accept as input a dictionary variable **t_ply** which contains the thickness of a single-ply with its unit of measure;
 * accept as input the selected lamination sequence, stored inside a list variable **lam_seq** (it can be defined as a collection of integers or floats number);
 * materials' database is loaded, stored inside object variable and converted to SI unit of measures, so that the program is fully capable to work in Engineering and SI unit of measures;
-* **Classical Lamination Theory** is then applied to obtain stresses and strains inside every single-ply of the lamination sequence, evaluating also the **Margin of Safety** (not available at the moment but it will be very soon!).
+* **Classical Lamination Theory** is then applied to obtain stresses and strains inside every single-ply of the lamination sequence, evaluating also the **Margin of Safety** (now available!).
 ## Criticism about current implementation 
 At the moment, the program is too "heavy" and quite hard to read. Any possible improvements are related to
 1. **increase the modularity level** and decompose the main program into several smaller parts;
