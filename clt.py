@@ -46,8 +46,8 @@ from types import SimpleNamespace
 import numpy as np
 from collections import defaultdict
 # =======================================
-JSONFileName = "composites_data.json"
-with open(JSONFileName, "r") as f:
+JSONFileName1 = "composites_data.json"
+with open(JSONFileName1, "r") as f:
     # ===================================
     # COMPOSITE MATERIALS DATABASE
     # ===================================
@@ -56,355 +56,24 @@ with open(JSONFileName, "r") as f:
 #   DEFINING AN OBJECT WITH ALL THE MATERIALS
 # ===================================================    
 materials_data    = SimpleNamespace(**composites_data)
-materials_data_SI = {}
-type(materials_data_SI)
-name_mat = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-prop_mat = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-for i in range(len(name_mat)):
-    for key, value in composites_data.items():
-        name_mat[i] = key
-        prop_mat[i] = value
-        print(" Testing name_mat: ", name_mat[i])
-        materials_data_SI[name_mat[i]] = prop_mat[i]
-# Object with all the properties to be converted in SI units
-materials_data_SI = SimpleNamespace(**materials_data_SI)
-print(" A new dictionary to fill with SI values: ", materials_data_SI)  
-pause()
-# Filling the new object with SI units
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.AS3501CarbonEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-pause()
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.AS43502CarbonEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.AS452503CarbonBismaleimide.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-for key, value in materials_data_SI.AS452503CarbonBismaleimide.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.AS4APC2CarbonPEEK.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.GY70934CarbonEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.GenericEGlassEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.GenericIM6Epoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.GenericKevlar149Epoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.GenericSGlassEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.IM6APC2CarbonPEEK.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.S2449SP381SGlassEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.T3005208CarbonEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.T300934CarbonEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
-# ============================================================================
-key   = 0
-value = 0
-conv  = 0
-for key, value in materials_data_SI.T300976CarbonEpoxy.items():
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    if value["Unit"]=="psi":
-        conv           = psi2pascal(value["Value"])
-        value["Unit"]  = "Pa"
-        value["Value"] = conv
-        print(" Converted in SI: ", value["Value"], value["Unit"])
-    elif value["Unit"]=="in/in":
-        value["Unit"] = "mm/mm"
-    elif value["Unit"]=="in/in/F":
-        conv           = fahrenheit2kelvin(value["Value"])
-        value["Unit"]  = "mm/mmm/K"
-        value["Value"] = conv 
-    print(" Converted properties: ")
-    print(" Property: ", key)
-    print(" Value: ", value["Value"], value["Unit"])
-    materials_data_SI    
+# =======================================
+JSONFileName2 = "composites_data_Si_UNIT.json"
+with open(JSONFileName2, "r") as f:
+    # ===================================
+    # COMPOSITE MATERIALS DATABASE
+    # ===================================
+    composites_data_SI = json.load(f)
+# ===================================================
+#   DEFINING AN OBJECT WITH ALL THE MATERIALS
+#   +++++++++++++++++++++++++++++++++++++++++
+#                    SI UNITS
+#   +++++++++++++++++++++++++++++++++++++++++
+# ===================================================    
+materials_data_SI    = SimpleNamespace(**composites_data_SI)
+# ============================================================================  
 # ============================================================================
 # MATERIALS LIBRARY
 # ============================================================================
-with open(JSONFileName, "r") as f:
-    composites_data = json.load(f)
-    materials_data  = SimpleNamespace(**composites_data)
 class MATERIALS: 
     """
     Composite materials data:
@@ -1380,3 +1049,4 @@ class CLT(object):
             a, b, c, d = 0.0, 0.0, 0.0, 0.0
             
         return MS
+
